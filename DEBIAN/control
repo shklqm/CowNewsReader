@@ -1,0 +1,10 @@
+Package: cownewsreader
+Version: 0.1
+Architecture: all
+Maintainer: shkelqim memolla <e1848357@ceng.metu.edu.tr>
+Installed-Size: 209
+Depends: dconf-gsettings-backend | gsettings-backend, python (>= 2.7), python (<< 2.8), python:any (>= 2.7.1-0ubuntu2), gir1.2-glib-2.0, gir1.2-gtk-3.0, yelp
+Section: python
+Priority: extra
+Description: Simple application to read the news from cow system
+ UNKNOWN

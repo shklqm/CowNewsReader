@@ -1,0 +1,8 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: cownewsreader
+Upstream-Contact: UNKNOWN <UNKNOWN>
+Source: UNKNOWN
+
+Files: *
+Copyright: (C) 2016 Shkelqim Memolla <e1848357@ceng.metu.edu.tr>
+License: UNKNOWN

@@ -1,0 +1,15 @@
+Metadata-Version: 1.1
+Name: cownewsreader
+Version: 0.1
+Summary: UNKNOWN
+Home-page: UNKNOWN
+Author: UNKNOWN
+Author-email: UNKNOWN
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Requires: gi.repository.GObject
+Requires: gi.repository.Gio
+Requires: gi.repository.Gtk
+Provides: cownewsreader
+Provides: cownewsreader_lib
