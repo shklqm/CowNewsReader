@@ -1,3 +1,10 @@
+import directory, LogIn
 
 def main():
-    print "Hello World!"
+	obj = directory.Directory()
+	obj.startDir()
+	lg = LogIn.Login()	
+	lg.createLogInWindow()
+
+	print lg.status
+
