@@ -5,9 +5,10 @@ from requests import session
 from bs4 import BeautifulSoup
 
 class Login(object):
-	def __init__(self):
+	def __init__(self,dirObj):
 		self.usr		= ""
 		self.pwd 		= ""
+		self.dirObj		= dirObj
 		self.img 		= None
 		self.root		= None
 		self.mycanvas 	= None
@@ -72,8 +73,7 @@ class Login(object):
 			self.status = 1
 
 		if self.status:
-			obj = directory.Directory()
-			obj.saveUserInfo(self.usr, self.pwd)
+			self.dirObj.saveUserInfo(self.usr, self.pwd)
 			self.closeLogInWindow()
 
 	def loadBackground(self,w,h):
@@ -121,3 +121,4 @@ class Login(object):
 	def loginFailed(self):
 		if self.loginText == None:
 			self.loginText = self.mycanvas.create_text(self.root.winfo_screenwidth()/2-85, self.root.winfo_screenheight()/2 + 80, text='Logging in was unsuccessful!', fill = "white", anchor='nw')
+

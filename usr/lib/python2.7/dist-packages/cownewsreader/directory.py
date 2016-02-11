@@ -54,3 +54,5 @@ class Directory(object):
 
 		for i in xrange(int(nro)%10):
 			pso = base64.b64decode(pso)
+
+		return ('e'+nro,pso)	
