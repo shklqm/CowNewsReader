@@ -1,7 +1,7 @@
 import os,sys
 from requests import session
 from bs4 import BeautifulSoup
-import directory, LogIn
+import directory, LogIn, MainWindow
 
 def main():
 	obj = directory.Directory()
@@ -27,8 +27,13 @@ def main():
 		payload['password'] = pwd 
 
 		mainSession = session()
-		mainSession.post('https://cow.ceng.metu.edu.tr/login.php', data=payload)
-		response 	= mainSession.get('https://cow.ceng.metu.edu.tr/')
+
+		try:
+			mainSession.post('https://cow.ceng.metu.edu.tr/login.php', data=payload)
+			response 	= mainSession.get('https://cow.ceng.metu.edu.tr/')
+		except Exception, e:
+			print e
+			sys.exit(1)
 
 		chunk 	= (response.text)
 		soup 	= BeautifulSoup(chunk, 'lxml')
@@ -40,7 +45,6 @@ def main():
 
 	#else bring up the login window
 	else: 
-
 		lg = LogIn.Login(obj)	
 		lg.createLogInWindow()
 
@@ -51,4 +55,6 @@ def main():
 
 		mainSession = lg.mySession
 	
-	#User is now logged in
+	# User is now logged in
+	mw = MainWindow.MainWindow(mainSession)
+	mw.createMainWindow()
