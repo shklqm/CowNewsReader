@@ -18,6 +18,9 @@ class Directory(object):
 
 		if not os.path.isfile(os.path.expanduser('~') + "/.CowNewsReader/pwd.txt"):
 			os.system("touch " + os.path.expanduser('~') + "/.CowNewsReader/pwd.txt")
+			
+		if not os.path.isfile(os.path.expanduser('~') + "/.CowNewsReader/read.txt"):
+			os.system("touch " + os.path.expanduser('~') + "/.CowNewsReader/read.txt")
 
 	def saveUserInfo(self, name, pwd):
 		try:
