@@ -131,6 +131,7 @@ class CheckNews(threading.Thread):
 				if not newsId in req.courseNews:
 					newNewsToBeOpened.append(tuple(tempList))
 
+		newsToBeReturned = []
 		#Open each new news
 		for i in xrange(len(newNewsToBeOpened)):
 			try:
@@ -154,12 +155,14 @@ class CheckNews(threading.Thread):
 				urllib.urlretrieve(img, os.path.expanduser('~') + "/.CowNewsReader/images/" + img[img.find('username=')+9:])
 
 			finalImgSrc = os.path.expanduser('~') + "/.CowNewsReader/images/" + img[img.find('username=')+9:]	
+			
 			#Create response news objects
 			newsResponse = Response(newNewsToBeOpened[i][1],req.courseName,finalImgSrc,title,name,fullname,date,body)
+			newsToBeReturned.append(newsResponse)
 
-			#insert it to the output queue
-			self.out_queue.put(newsResponse)
-			self.out_queue.task_done()
+		#insert newsToBeReturned to the output queue
+		self.out_queue.put(newsToBeReturned)
+		self.out_queue.task_done()
 
 
 class MainWindow(object):
@@ -185,7 +188,7 @@ class MainWindow(object):
 
 		w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
 
-		self.canvas=Canvas(self.root,bg='#ABCDEF',width=w,height=h)
+		self.canvas=Canvas(self.root,bg='#ABCDEF',width=500,height=500)
 
 		hbar=Scrollbar(self.root,orient=HORIZONTAL)
 		hbar.pack(side=BOTTOM,fill=X)
@@ -372,20 +375,22 @@ class MainWindow(object):
 		try:
 
 			while self.output_queue.qsize():
-				req = self.output_queue.get(0)
+				_req = self.output_queue.get(0)
 
-				self.allReadNews[req.courseName][req.newsId] = 0
+				for req in _req:
 
-				newsToBeDisplayed = NewsReader(self.canvas, req.courseName, req.responseImg, req.responseSubjectMessage, req.responseFromMessage, req.responseDateMessage, req.responseMessageBody)
+					self.allReadNews[req.courseName][req.newsId] = 0
 
-				self.allDisplayedNews.append(newsToBeDisplayed)
-				newsToBeDisplayed.createNews()
+					newsToBeDisplayed = NewsReader(self.canvas, req.courseName, req.responseImg, req.responseSubjectMessage, req.responseFromMessage, req.responseDateMessage, req.responseMessageBody)
 
-				# Create desktop notification
-				os.system("notify-send -i " + req.responseImg.replace('&', '\&') + " \""  
-					+ req.responseFromName.encode("UTF-8") + ": " 
-					+ req.responseSubjectMessage.encode("UTF-8") + "\" \""  
-					+ req.responseMessageBody.encode("UTF-8").strip() + "\"")
+					self.allDisplayedNews.append(newsToBeDisplayed)
+					newsToBeDisplayed.createNews()
+
+					# Create desktop notification
+					os.system("notify-send -i " + req.responseImg.replace('&', '\&') + " \""  
+						+ req.responseFromName.encode("UTF-8") + ": " 
+						+ req.responseSubjectMessage.encode("UTF-8") + "\" \""  
+						+ req.responseMessageBody.encode("UTF-8").strip() + "\"")
 
 		except Queue.Empty:
 			print "Error: Queue Empty"			
