@@ -52,7 +52,7 @@ class NewsReader(object):
 		self.canvas.create_window(120, lastNewsPosition+95, window=dateMessageLabel, anchor='w')
 
 		# GET MESSAGE BODY
-		messageBodyLabel = Label(self.canvas, text=self.messageBody,anchor='w', wraplength=self.canvas.winfo_screenwidth(), font="monosa",bg='#ABCDEF') #wraplength=w,
+		messageBodyLabel = Label(self.canvas, text=self.messageBody,anchor='w', wraplength=self.canvas.winfo_screenwidth(), font="monosa",bg='#ABCDEF')
 		messageBodyLabel.pack()
 		self.canvas.create_window(0, lastNewsPosition+135+messageBodyLabel.winfo_reqheight()/2, window=messageBodyLabel, anchor='w')
 
@@ -160,26 +160,33 @@ class CheckNews(threading.Thread):
 			newsResponse = Response(newNewsToBeOpened[i][1],req.courseName,finalImgSrc,title,name,fullname,date,body)
 			newsToBeReturned.append(newsResponse)
 
-		#insert newsToBeReturned to the output queue
-		self.out_queue.put(newsToBeReturned)
+
+		if not len(newsToBeReturned):
+			#insert just the course name to the output queue
+			self.out_queue.put(req.courseName)
+		else:	
+			#insert newsToBeReturned to the output queue
+			self.out_queue.put(newsToBeReturned)
+		
 		self.out_queue.task_done()
 
 
 class MainWindow(object):
 	def __init__(self,mwSession):
 		self.mwSession		= mwSession
-		self.root 			= None
-		self.canvas 		= None
-		self.prefroot 		= None
-		self.helproot		= None
-		self.aboutroot		= None
-		self.input_queue	= Queue.Queue()
-		self.output_queue	= Queue.Queue()
-		self.courseList		= []
-		self.registeredCourses = {}
-		self.allReadNews 	= {}
-		self.prefChanged 	= 0
-		self.allDisplayedNews = []
+		self.root 				= None
+		self.canvas 			= None
+		self.prefroot 			= None
+		self.helproot			= None
+		self.aboutroot			= None
+		self.input_queue		= Queue.Queue()
+		self.output_queue		= Queue.Queue()
+		self.prefChanged 		= 0
+		self.courseList			= []
+		self.allDisplayedNews 	= []
+		self.registeredCourses 	= {}
+		self.allReadNews 		= {}
+		self.allRunningThreads 	= {}
 
 	def createMainWindow(self):
 		self.root = Tk()
@@ -188,7 +195,7 @@ class MainWindow(object):
 
 		w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
 
-		self.canvas=Canvas(self.root,bg='#ABCDEF',width=500,height=500)
+		self.canvas=Canvas(self.root,bg='#ABCDEF',width=w,height=h)
 
 		hbar=Scrollbar(self.root,orient=HORIZONTAL)
 		hbar.pack(side=BOTTOM,fill=X)
@@ -362,35 +369,46 @@ class MainWindow(object):
 				self.input_queue.put(req)
 				
 		#Create threads for each selected course
-		for i in xrange(self.input_queue.qsize()):
-			myThread = CheckNews(self.input_queue, self.output_queue)
-			myThread.setDaemon(True)
-			myThread.start()
+		for key, value in self.registeredCourses.items():
+			val = value.get()
+			if val:
+				if not key in self.allRunningThreads:	#if thread does not exist, create
+					self.allRunningThreads[key] = 1
+				elif self.allRunningThreads[key]:		#if thread is still running, continue
+					continue	
+
+				myThread = CheckNews(self.input_queue, self.output_queue)
+				myThread.setDaemon(True)
+				myThread.start()
 
 		#Start processing results
 		self.root.after(5000, self.processResult)
 
 	def processResult(self):
-		print "coming to process"
+
 		try:
 
 			while self.output_queue.qsize():
 				_req = self.output_queue.get(0)
 
-				for req in _req:
+				if not isinstance(_req, list):
+					self.allRunningThreads[_req] = 0
 
-					self.allReadNews[req.courseName][req.newsId] = 0
+				else:
+					for req in _req:
+						self.allReadNews[req.courseName][req.newsId] 	= 0
+						self.allRunningThreads[req.courseName]			= 0
 
-					newsToBeDisplayed = NewsReader(self.canvas, req.courseName, req.responseImg, req.responseSubjectMessage, req.responseFromMessage, req.responseDateMessage, req.responseMessageBody)
+						newsToBeDisplayed = NewsReader(self.canvas, req.courseName, req.responseImg, req.responseSubjectMessage, req.responseFromMessage, req.responseDateMessage, req.responseMessageBody)
 
-					self.allDisplayedNews.append(newsToBeDisplayed)
-					newsToBeDisplayed.createNews()
+						self.allDisplayedNews.append(newsToBeDisplayed)
+						newsToBeDisplayed.createNews()
 
-					# Create desktop notification
-					os.system("notify-send -i " + req.responseImg.replace('&', '\&') + " \""  
-						+ req.responseFromName.encode("UTF-8") + ": " 
-						+ req.responseSubjectMessage.encode("UTF-8") + "\" \""  
-						+ req.responseMessageBody.encode("UTF-8").strip() + "\"")
+						# Create desktop notification
+						os.system("notify-send -i " + req.responseImg.replace('&', '\&') + " \""  
+							+ req.responseFromName.encode("UTF-8") + ": " 
+							+ req.responseSubjectMessage.encode("UTF-8") + "\" \""  
+							+ req.responseMessageBody.encode("UTF-8").strip() + "\"")
 
 		except Queue.Empty:
 			print "Error: Queue Empty"			
