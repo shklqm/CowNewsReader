@@ -12,11 +12,11 @@ import urllib
 
 
 lastNewsPosition 	= 0
-allCourses = ["test","news","course.100","course.111","course.140","course.213","course.223","course.232","course.242","course.272","course.280","course.301","course.302","course.305","course.315","course.316","course.331","course.332","course.334","course.336","course.340","course.350","course.351","course.352","course.356","course.371","course.372","course.373","course.378","course.380","course.382","course.384","course.424","course.435","course.436","course.437","course.441","course.443","course.444","course.451","course.462","course.463","course.465","course.466","course.469","course.477","course.478","course.482","course.483","course.490","course.493","course.494","course.495","course.497","course.498","course.499","course.508","course.514","course.520","course.530","course.531","course.532","course.536","course.538","course.539","course.540","course.546","course.550","course.551","course.553","course.556","course.559","course.561","course.562","course.563","course.564","course.565","course.566","course.567","course.568","course.569","course.571","course.574","course.577","course.580","course.581","course.583","course.584","course.591","course.701","course.710","course.712","course.713","course.714","course.729","course.732","course.734","course.740","course.769","course.770","course.771","course.773","course.776","course.779","course.784","course.785","course.786","course.778","course.ee281"]
+allCourses = ["course.100","course.111","course.140","course.213","course.223","course.232","course.242","course.272","course.280","course.301","course.302","course.305","course.315","course.316","course.331","course.332","course.334","course.336","course.340","course.350","course.351","course.352","course.356","course.371","course.372","course.373","course.378","course.380","course.382","course.384","course.424","course.435","course.436","course.437","course.441","course.443","course.444","course.451","course.462","course.463","course.465","course.466","course.469","course.477","course.478","course.482","course.483","course.490","course.493","course.494","course.495","course.497","course.498","course.499","course.508","course.514","course.520","course.530","course.531","course.532","course.536","course.538","course.539","course.540","course.546","course.550","course.551","course.553","course.556","course.559","course.561","course.562","course.563","course.564","course.565","course.566","course.567","course.568","course.569","course.571","course.574","course.577","course.580","course.581","course.583","course.584","course.591","course.701","course.710","course.712","course.713","course.714","course.729","course.732","course.734","course.740","course.769","course.770","course.771","course.773","course.776","course.779","course.784","course.785","course.786","course.778","course.ee281","test","news"]
 
 class NewsReader(object):
-	def __init__(self, _canvas, sourceMessage, imgPath, subjectMessage, fromMessage, dateMessage, messageBody):
-		self.canvas 			= _canvas
+	def __init__(self, sourceMessage, imgPath, subjectMessage, fromMessage, dateMessage, messageBody):
+		self.canvas 			= None
 		self.sourceMessage		= sourceMessage
 		self.img 				= None
 		self.imgPath 			= imgPath		
@@ -24,6 +24,9 @@ class NewsReader(object):
 		self.fromMessage 	 	= fromMessage
 		self.dateMessage 	 	= dateMessage
 		self.messageBody 		= messageBody
+
+	def setCanvas(self, _canvas):
+		self.canvas = _canvas
 
 	def createNews(self):
 		global lastNewsPosition
@@ -108,6 +111,7 @@ class CheckNews(threading.Thread):
 
     def run(self):
 		req = self.in_queue.get(0)
+		# print "thread running..."
 		
 		try:
 			response 	= req.mwSession.get('https://cow.ceng.metu.edu.tr/News/thread.php?group=metu.ceng.' + req.courseName)
@@ -130,6 +134,7 @@ class CheckNews(threading.Thread):
 				tempList= [link, newsId]
 				if not newsId in req.courseNews:
 					newNewsToBeOpened.append(tuple(tempList))
+					# print "Not there!!"
 
 		newsToBeReturned = []
 		#Open each new news
@@ -145,10 +150,9 @@ class CheckNews(threading.Thread):
 
 			title 		= soup.find('div', {'class': 'np_article_header'}).b.next_sibling.strip()
 			name 		= soup.find('div', {'class': 'np_article_header'}).a.text.strip()
-			fullname 	= name + " " + soup.find('div', {'class': 'np_article_header'}).a.next_sibling.strip()
-			date = soup.find('div', {'class': 'np_article_header'}).a.next_sibling.next_sibling.next_sibling.next_sibling.strip()
-			body = soup.find('div', {'class': 'np_article_body'}).text.strip()
-			img = soup.find(href=re.compile('download_userPicture'))['href'].strip()
+			date 		= soup.find('div', {'class': 'np_article_header'}).a.next_sibling.next_sibling.next_sibling.next_sibling.strip()
+			body 		= soup.find('div', {'class': 'np_article_body'}).text.strip()
+			img 		= soup.find(href=re.compile('download_userPicture'))['href'].strip()
 
 			#Check whether the image already exists
 			if not os.path.isfile(os.path.expanduser('~') + "/.CowNewsReader/images/" + img[img.find('username=')+9:]):
@@ -157,7 +161,7 @@ class CheckNews(threading.Thread):
 			finalImgSrc = os.path.expanduser('~') + "/.CowNewsReader/images/" + img[img.find('username=')+9:]	
 			
 			#Create response news objects
-			newsResponse = Response(newNewsToBeOpened[i][1],req.courseName,finalImgSrc,title,name,fullname,date,body)
+			newsResponse = Response(newNewsToBeOpened[i][1],req.courseName,finalImgSrc,title,name,name,date,body)
 			newsToBeReturned.append(newsResponse)
 
 
@@ -170,10 +174,11 @@ class CheckNews(threading.Thread):
 		
 		self.out_queue.task_done()
 
+		# print "finished"	
 
 class MainWindow(object):
 	def __init__(self,mwSession):
-		self.mwSession		= mwSession
+		self.mwSession			= mwSession
 		self.root 				= None
 		self.canvas 			= None
 		self.prefroot 			= None
@@ -182,11 +187,16 @@ class MainWindow(object):
 		self.input_queue		= Queue.Queue()
 		self.output_queue		= Queue.Queue()
 		self.prefChanged 		= 0
-		self.courseList			= []
-		self.allDisplayedNews 	= []
-		self.registeredCourses 	= {}
-		self.allReadNews 		= {}
-		self.allRunningThreads 	= {}
+		self.newsArrived 		= 0
+		self.allDisplayedNews 		= {}
+		self.registeredCourses 		= {}
+		self.initRegisteredCourses 	= {}
+		self.allReadNews 			= {}
+		self.allRunningThreads 		= {}
+
+	def initMainWindow(self):
+		self.loadInitRegisteredCourses()
+		self.loadAllReadNews()
 
 	def createMainWindow(self):
 		self.root = Tk()
@@ -212,9 +222,8 @@ class MainWindow(object):
 		self.loadMenu()
 		self.bindKeys()
 
-		self.loadRegisteredCourses()
-		self.loadAllReadNews()
-		self.startMainWindow()
+		self.displayUnreadNews()
+
 		self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 		self.root.mainloop()
 
@@ -308,19 +317,33 @@ class MainWindow(object):
 		    count   += 1
 
 	def loadRegisteredCourses(self):
+
 		global allCourses
 		self.registeredCourses = { c:IntVar() for c in allCourses }
 		f = open(os.path.expanduser('~') + "/.CowNewsReader/pref.txt", 'r')
 		for line in f:
 		    try:
 		        v = IntVar()
-		        v.set(1)    
+		        v.set(1)   
 		        self.registeredCourses[line.rstrip()] = v
 		        
 		    except KeyError, e:
 		        raise e
 		f.close()
-        
+     
+	def loadInitRegisteredCourses(self):
+		global allCourses
+		self.initRegisteredCourses = { c:0 for c in allCourses }
+
+		f = open(os.path.expanduser('~') + "/.CowNewsReader/pref.txt", 'r')
+		for line in f:
+		    try:
+		        self.initRegisteredCourses[line.rstrip()] = 1
+		        
+		    except KeyError, e:
+		        raise e
+		f.close()
+
 	def registerCoursesAndExit(self):
 		f = open(os.path.expanduser('~') + "/.CowNewsReader/pref.txt", 'w')
 		for key, value in self.registeredCourses.items():
@@ -355,12 +378,12 @@ class MainWindow(object):
 	def startMainWindow(self):
 		#Check if new courses are added or removed. Reload course list
 		if self.prefChanged:
-			self.loadRegisteredCourses()
+			self.loadInitRegisteredCourses()
 			self.prefChanged = 0
 
 		#Work only with the registered courses
-		for key, value in self.registeredCourses.items():
-		    val = value.get()
+		for key, value in self.initRegisteredCourses.items():
+		    val = value#.get()
 		    if val:
 				#Create object request
 				req = Request(key, self.allReadNews[key], self.mwSession)
@@ -369,8 +392,8 @@ class MainWindow(object):
 				self.input_queue.put(req)
 				
 		#Create threads for each selected course
-		for key, value in self.registeredCourses.items():
-			val = value.get()
+		for key, value in self.initRegisteredCourses.items():
+			val = value#.get()
 			if val:
 				if not key in self.allRunningThreads:	#if thread does not exist, create
 					self.allRunningThreads[key] = 1
@@ -381,11 +404,8 @@ class MainWindow(object):
 				myThread.setDaemon(True)
 				myThread.start()
 
-		#Start processing results
-		self.root.after(5000, self.processResult)
-
 	def processResult(self):
-
+		# print "coming to process"
 		try:
 
 			while self.output_queue.qsize():
@@ -399,10 +419,8 @@ class MainWindow(object):
 						self.allReadNews[req.courseName][req.newsId] 	= 0
 						self.allRunningThreads[req.courseName]			= 0
 
-						newsToBeDisplayed = NewsReader(self.canvas, req.courseName, req.responseImg, req.responseSubjectMessage, req.responseFromMessage, req.responseDateMessage, req.responseMessageBody)
-
-						self.allDisplayedNews.append(newsToBeDisplayed)
-						newsToBeDisplayed.createNews()
+						newsToBeDisplayed = NewsReader(req.courseName, req.responseImg, req.responseSubjectMessage, req.responseFromMessage, req.responseDateMessage, req.responseMessageBody)
+						self.allDisplayedNews[newsToBeDisplayed] = 0
 
 						# Create desktop notification
 						os.system("notify-send -i " + req.responseImg.replace('&', '\&') + " \""  
@@ -410,7 +428,21 @@ class MainWindow(object):
 							+ req.responseSubjectMessage.encode("UTF-8") + "\" \""  
 							+ req.responseMessageBody.encode("UTF-8").strip() + "\"")
 
+						# Signal new news has arrived
+						self.newsArrived = 1
+
 		except Queue.Empty:
 			print "Error: Queue Empty"			
 
-		self.startMainWindow()
+	def displayUnreadNews(self):
+		global lastNewsPosition
+		lastNewsPosition = 0
+
+		for key, value in self.allDisplayedNews.items():
+			if not value:
+				key.setCanvas(self.canvas)
+				key.createNews()
+				self.allDisplayedNews[key] = 1
+
+		#Restore back newsArrived
+		self.newsArrived = 0
