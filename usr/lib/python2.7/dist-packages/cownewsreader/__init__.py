@@ -1,7 +1,9 @@
 import os,sys
 from requests import session
 from bs4 import BeautifulSoup
-import directory, LogIn, MainWindow
+import directory, LogIn, MainWindow, NewsIndicator
+import signal
+from Tkinter import *
 
 def main():
 	obj = directory.Directory()
@@ -55,6 +57,13 @@ def main():
 
 		mainSession = lg.mySession
 	
+	signal.signal(signal.SIGINT, signal.SIG_DFL)
+	
 	# User is now logged in
 	mw = MainWindow.MainWindow(mainSession)
-	mw.createMainWindow()
+	mw.initMainWindow()
+
+	# Load indicator
+	ind = NewsIndicator.NewsIndicator(mw)
+	ind.main()
+
