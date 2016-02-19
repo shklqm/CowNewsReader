@@ -86,6 +86,8 @@ class Login(object):
 	def createLogInWindow(self):
 		self.root = Tk()
 		
+		self.root.title('Log In')
+		
 		myframe 				= Frame(self.root)
 		myframe.pack(fill		= BOTH, expand=YES)
 		w, h 					= self.root.winfo_screenwidth(), self.root.winfo_screenheight()
