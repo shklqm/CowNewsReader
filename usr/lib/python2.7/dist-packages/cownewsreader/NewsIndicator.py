@@ -25,7 +25,7 @@ class NewsIndicator(object):
 	    self.menu.show_all()
 	    
 	def main_window(self,widget):
-		if self.mw.root != None:
+		if self.mw.root == None:
 			self.mw.createMainWindow()
 
 	def quit(self,widget):
