@@ -85,4 +85,4 @@ send a pull request.
 
 ## License
 
-MIT
+* [MIT License](http://opensource.org/licenses/MIT)
