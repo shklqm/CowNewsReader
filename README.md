@@ -39,7 +39,7 @@ cp /usr/share/applications/cownewsreader.desktop ~/.config/autostart/
 ```
 so the application will autostart in log in.
 
-First run log in window will come up. Cow account credentials should be used. If logging in will be successful this window will not appear in the next run. Otherwise an unsuccessful message will appear and the log in window will come up until logeed in successfully. 
+First run log in window will come up. Cow account credentials should be used. If logging in will be successful this window will not appear in the next run. Otherwise an unsuccessful message will appear and the log in window will come up until logged in successfully. 
 
 <img src="https://github.com/blediboss/CowNewsReader/blob/master/images/photo-3.png" /> 
 
