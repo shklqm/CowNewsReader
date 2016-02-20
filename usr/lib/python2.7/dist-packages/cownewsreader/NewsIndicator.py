@@ -25,7 +25,8 @@ class NewsIndicator(object):
 	    self.menu.show_all()
 	    
 	def main_window(self,widget):
-		self.mw.createMainWindow()
+		if self.mw.root != None:
+			self.mw.createMainWindow()
 
 	def quit(self,widget):
 		gtk.main_quit()

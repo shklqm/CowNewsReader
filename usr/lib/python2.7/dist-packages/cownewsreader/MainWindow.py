@@ -291,6 +291,7 @@ class MainWindow(object):
 
 		self.saveAllReadNews()
 		self.root.destroy()
+		self.root = None
 
 	def preferencesCommand(self):
 		if self.prefroot == None:
