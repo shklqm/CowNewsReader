@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*- 
+from bs4 import BeautifulSoup
 from Tkinter import *
 import Image, ImageTk
-from random import randint
-from bs4 import BeautifulSoup
+import webbrowser
 import threading
 import Queue
 import os
 import json
 import time
 import urllib
-
 
 lastNewsPosition 	= 0
 allCourses = ["course.100","course.111","course.140","course.213","course.223","course.232","course.242","course.272","course.280","course.301","course.302","course.305","course.315","course.316","course.331","course.332","course.334","course.336","course.340","course.350","course.351","course.352","course.356","course.371","course.372","course.373","course.378","course.380","course.382","course.384","course.424","course.435","course.436","course.437","course.441","course.443","course.444","course.451","course.462","course.463","course.465","course.466","course.469","course.477","course.478","course.482","course.483","course.490","course.493","course.494","course.495","course.497","course.498","course.499","course.508","course.514","course.520","course.530","course.531","course.532","course.536","course.538","course.539","course.540","course.546","course.550","course.551","course.553","course.556","course.559","course.561","course.562","course.563","course.564","course.565","course.566","course.567","course.568","course.569","course.571","course.574","course.577","course.580","course.581","course.583","course.584","course.591","course.701","course.710","course.712","course.713","course.714","course.729","course.732","course.734","course.740","course.769","course.770","course.771","course.773","course.776","course.779","course.784","course.785","course.786","course.778","course.ee281","test","news"]
@@ -182,7 +181,6 @@ class MainWindow(object):
 		self.root 				= None
 		self.canvas 			= None
 		self.prefroot 			= None
-		self.helproot			= None
 		self.aboutroot			= None
 		self.input_queue		= Queue.Queue()
 		self.output_queue		= Queue.Queue()
@@ -258,20 +256,12 @@ class MainWindow(object):
 		if windowToBeclosed == "prefroot":
 			self.prefroot.destroy()
 			self.prefroot = None
-		elif windowToBeclosed == "helproot":
-			self.helproot.destroy()
-			self.helproot = None
 		elif windowToBeclosed == "aboutroot":
 			self.aboutroot.destroy()
 			self.aboutroot = None
 
 	def helpCommand(self):
-		if self.helproot == None:
-			self.helproot = Toplevel()
-			self.helproot.title('Help')
-			self.helproot.protocol("WM_DELETE_WINDOW", lambda: self.on_closing("helproot") )
-			canvas = Canvas(self.helproot, width=300, height=300)
-			canvas.pack()		
+		webbrowser.open_new(r"https://github.com/blediboss/CowNewsReader")
 
 	def aboutCommand(self):
 		if self.aboutroot == None:
@@ -279,13 +269,28 @@ class MainWindow(object):
 			self.aboutroot.title('About')
 			self.aboutroot.protocol("WM_DELETE_WINDOW", lambda: self.on_closing("aboutroot") )
 			canvas = Canvas(self.aboutroot, width=300, height=300)
+			image 			= Image.open("/usr/share/cownewsreader/media/background.png")
+			image 			= image.resize((100, 100), Image.ANTIALIAS)
+			self.img 		= ImageTk.PhotoImage(image)
+			canvas.create_image(100, 20, image = self.img, anchor="nw")
+
+			name = Label(canvas, text="CowNewsReader" ,anchor='w',font="monosa 11 bold")
+			name.pack()
+			canvas.create_window(80, 150, window=name, anchor='w')
+
+			version = Label(canvas, text="1.0.0" ,anchor='w')
+			version.pack()
+			canvas.create_window(120, 180, window=version, anchor='w')
+
+			copyright = Label(canvas, text="© 2016 Shkelqim Memolla" ,anchor='w')
+			copyright.pack()
+			canvas.create_window(80, 220, window=copyright, anchor='w')
+
 			canvas.pack()		
 
 	def closeMainWindow(self):
 		if self.prefroot != None:
 			self.prefroot.destroy()
-		if self.helproot != None:
-			self.helproot.destroy()
 		if self.aboutroot != None:
 			self.aboutroot.destroy()
 
